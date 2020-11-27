@@ -1,0 +1,161 @@
+
+# Simple Regression on random data. This 
+
+
+
+
+
+
+#Step 1: Define and import relevant and useful packages.
+import numpy as np
+import pandas as pd
+import tensorflow as tf
+from matplotlib import pyplot as plt
+import math
+
+
+
+#Step 2: Define/Create generic functions which can then go on and be called on when building and visulising the model.
+
+# Builing model structure.
+
+def build_model(my_learning_rate):
+
+
+  # Most simple tf.keras models are sequential. 
+  # A sequential model contains one or more layers.
+  model = tf.keras.models.Sequential()
+
+  # Describe the topography (general structure) of the model type.
+  # The topography of a simple linear regression model is a single node in a single layer.
+  # These dense layers are fully connected and are a nice simple model to start with.
+  
+  model.add(tf.keras.layers.Dense(units=1, 
+                                  input_shape=(1,)))
+
+  # Compile the model topography into code that TensorFlow can efficiently execute. Configure training to minimize the model's mean squared error. 
+  
+  model.compile(optimizer=tf.keras.optimizers.RMSprop(lr=my_learning_rate),
+                loss="mean_squared_error",
+                metrics=[tf.keras.metrics.RootMeanSquaredError()])
+
+  return model           
+
+# End of model structure.
+
+
+#Building function to train the model
+
+def train_model(model, feature, label, epochs, batch_size):
+
+  # Feed the feature values and the label values to the model. 
+  # The model will train for the specified number of epochs (like training cycles), gradually learning how the feature values relate to the label values. 
+  
+  history = model.fit(x=feature,
+                      y=label,
+                      batch_size=batch_size,
+                      epochs=epochs)
+
+  # Gather the trained model's weight and bias.
+  trained_weight = model.get_weights()[0]
+  trained_bias = model.get_weights()[1]
+
+  # The list of epochs is stored separately from the rest of history. The history.(...) extension can extract relevant things
+  epochs = history.epoch
+  
+  # Gather the history (a snapshot) of each epoch.
+  hist = pd.DataFrame(history.history)
+
+  # Specifically gather the model's root mean 
+  #squared error at each epoch. 
+  rmse = hist["root_mean_squared_error"]
+
+  return trained_weight, trained_bias, epochs, rmse
+
+# End of building function to train model
+
+
+# Functions created to help plot our model and resulting loss curve 
+
+# Function created to help plot our model
+def plot_the_model(trained_weight, trained_bias, feature, label):
+  
+
+  # Label the axes.
+  plt.xlabel("feature")
+  plt.ylabel("label")
+
+  # Plot the feature values vs. label values.
+  plt.scatter(feature, label)
+
+  # Create a red line representing the model. The red line starts
+  # at coordinates (x0, y0) and ends at coordinates (x1, y1).
+  x0 = 0
+  y0 = trained_bias
+  x1 = my_feature[-1]
+  y1 = trained_bias + (trained_weight * x1)
+  plt.plot([x0, x1], [y0, y1], c='r')
+
+  # Render the scatter plot and the red line.
+  plt.show()
+  # End of function created to help plot our model
+
+# Function created to help plot the loss curve of our model (Seperate from our model visualising curve).
+
+def plot_the_loss_curve(epochs, rmse):
+  plt.figure()
+  plt.xlabel("Epoch")
+  plt.ylabel("Root Mean Squared Error")
+
+  plt.plot(epochs, rmse, label="Loss")
+  plt.legend()
+  plt.ylim([rmse.min()*0.97, rmse.max()])
+  plt.show()
+  
+  # End if function to plot loss curve.
+  
+  
+
+# Step 3: Now that we have defined our model function it is time to generate some data. For the case of simplicity we will generate a bunch of random numbers.
+          However, these same functions can be used to model any type of data which "ticks the right boxes".
+          
+          
+# Creating the data (In this 12 data points, with 1 feature and 1 label). There has to be only 1 feature and 1 label as otherwise we can't use a simple linear regression.
+# Below we will also create a random data set on integers from 0 to 100 and use these as our features.
+
+my_feature = ([1.0, 2.0,  3.0,  4.0,  5.0,  6.0,  7.0,  8.0,  9.0, 10.0, 11.0, 12.0])
+my_label   = ([5.0, 8.8,  9.6, 14.2, 18.8, 19.5, 21.4, 26.8, 28.9, 32.0, 33.8, 38.2])
+
+# Here we create our data assuming random integers from 0 to 100 inclusive.
+# Note: A linear model may not be the best predictor of this kind of random data.
+
+my_features = np.random.randint(low=0, high=101, size(1,12)
+my labels = np.random.randint(low=0, high= 101, size=(1,12)
+
+
+
+
+# Step 4:  Now we have the data we can intialize the hyperparameters and create our model.
+
+
+# Note: Getting the optimal initial hyperparameter values isnt nessecary as the efficiency isnt effected too much. 
+# Note: Since the data size is small its fine using the whole dataset as the batch-size.
+
+learning_rate=0.1
+epochs=20
+my_batch_size=12
+
+my_simpleregression_model = build_model(learning_rate)
+
+trained_weight, trained_bias, epochs, rmse = train_model(my_simpleregression_model, my_feature, 
+                                                         my_label, epochs,
+                                                         my_batch_size)
+                                                         
+plot_the_model(trained_weight, trained_bias, my_feature, my_label)
+
+plot_the_loss_curve(epochs, rmse)
+
+
+
+# Step 5 and beyond: Now the model is complete it's just a case of adjusting the hyperparameters and fine tuning them to improve convergence rate & efficiency and reduce loss.
+  
